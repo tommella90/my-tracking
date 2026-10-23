@@ -1,0 +1,32 @@
+{
+  "exportVersion": "2.7",
+  "devices": [
+    {
+      "name": "Polar Street X",
+      "deviceId": "1A581F3F",
+      "deviceUuid": "0e030000-0084-0000-0000-00001a581f3f",
+      "registered": "2026-08-20",
+      "settings": [
+        {
+          "name": "handedness",
+          "value": "1"
+        },
+        {
+          "name": "language",
+          "value": "en"
+        }
+      ]
+    }
+  ],
+  "archivedDevices": [],
+  "productRegistrationEvents": [
+    {
+      "userId": "64764843",
+      "created": "2026-08-20T08:50:30.654Z",
+      "eventType": "ADD",
+      "deviceUuid": "0e030000-0084-0000-0000-00001a581f3f",
+      "manufacturerName": "Polar Electro Oy",
+      "modelName": "Polar_INW6J"
+    }
+  ]
+}

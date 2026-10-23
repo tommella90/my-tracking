@@ -1,0 +1,52 @@
+{
+  "exportVersion": "2.7",
+  "perceivedRecovery": [],
+  "physicalInformations": [
+    {
+      "dateTime": "2026-08-20T08:50:33.000",
+      "height, cm": 170.0,
+      "weight, kg": 70.0,
+      "trainingBackground": "REGULAR",
+      "vo2Max": 46,
+      "maximumHeartRate": 174,
+      "restingHeartRate": 55,
+      "aerobicThreshold": 131,
+      "anaerobicThreshold": 157,
+      "sleepGoal": "PT28800S",
+      "typicalDay": "MOSTLY_SITTING",
+      "functionalThresholdPower": 280
+    },
+    {
+      "dateTime": "2026-08-20T08:57:00.000",
+      "height, cm": 170.0,
+      "weight, kg": 70.0,
+      "trainingBackground": "REGULAR",
+      "vo2Max": 46,
+      "maximumHeartRate": 174,
+      "restingHeartRate": 55,
+      "aerobicThreshold": 131,
+      "anaerobicThreshold": 157,
+      "sleepGoal": "PT28800S",
+      "typicalDay": "MOSTLY_SITTING",
+      "functionalThresholdPower": 280
+    }
+  ],
+  "notes": [],
+  "feelings": [],
+  "weights": [
+    {
+      "weight": 60.0,
+      "date": "2026-08-20"
+    },
+    {
+      "weight": 60.0,
+      "date": "2026-08-20"
+    }
+  ],
+  "feedbacks": [
+    {
+      "trainingLoadBalance": "DB_NOT_CALCULATED",
+      "date": "2026-08-20"
+    }
+  ]
+}

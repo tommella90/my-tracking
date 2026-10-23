@@ -1,0 +1,28 @@
+{
+  "exportVersion": "2.7",
+  "username": "tommaso.ramella@mailbox.org",
+  "firstName": "Genoveffa",
+  "lastName": "Peppina",
+  "physicalInformation": {
+    "sex": "MALE",
+    "birthday": "1990-11-19",
+    "height, cm": 175.0,
+    "weight, kg": 60.0,
+    "trainingBackground": "OCCASIONAL",
+    "sleepGoal": "PT28800S",
+    "typicalDay": "MOSTLY_SITTING"
+  },
+  "linkedApplications": [],
+  "linkedOrganisations": [],
+  "followedClubs": [],
+  "settings": {
+    "firstDayOfWeek": "MONDAY",
+    "measurementUnit": "METRIC",
+    "dateFormat": "DAY_MONTH_YEAR",
+    "dateSeparator": "HYPHEN",
+    "timeFormat": "TIMEFORMAT_24",
+    "timeFormatSeparator": "COLON",
+    "language": "en",
+    "flowLanguage": "en"
+  }
+}

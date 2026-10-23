@@ -1,0 +1,200 @@
+[
+  {
+    "date": "2023-01-01",
+    "devicePpiSamplesList": [
+      {
+        "deviceId": "1A581F3F",
+        "ppiSamples": [
+          {
+            "sampleDateTime": "2023-01-01T10:02:58.997",
+            "pulseLength": 1229
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:00.226",
+            "pulseLength": 802
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:01.028",
+            "pulseLength": 802
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:01.830",
+            "pulseLength": 976
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:02.806",
+            "pulseLength": 848
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:03.654",
+            "pulseLength": 1213
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:04.867",
+            "pulseLength": 1265
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:06.132",
+            "pulseLength": 1105
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:07.237",
+            "pulseLength": 1105
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:10.843",
+            "pulseLength": 1072
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:11.915",
+            "pulseLength": 1019
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:12.934",
+            "pulseLength": 835
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:13.769",
+            "pulseLength": 835
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:14.604",
+            "pulseLength": 980
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:15.584",
+            "pulseLength": 1304
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:16.888",
+            "pulseLength": 673
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:17.561",
+            "pulseLength": 853
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:18.414",
+            "pulseLength": 792
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:19.206",
+            "pulseLength": 936
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:20.142",
+            "pulseLength": 814
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:20.956",
+            "pulseLength": 949
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:21.905",
+            "pulseLength": 759
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:22.664",
+            "pulseLength": 855
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:23.519",
+            "pulseLength": 643
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:24.162",
+            "pulseLength": 952
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:25.114",
+            "pulseLength": 952
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:26.066",
+            "pulseLength": 952
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:27.018",
+            "pulseLength": 790
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:27.808",
+            "pulseLength": 834
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:28.642",
+            "pulseLength": 816
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:29.458",
+            "pulseLength": 700
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:30.158",
+            "pulseLength": 700
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:30.858",
+            "pulseLength": 826
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:31.684",
+            "pulseLength": 849
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:32.533",
+            "pulseLength": 849
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:33.382",
+            "pulseLength": 849
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:34.231",
+            "pulseLength": 1000
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:35.231",
+            "pulseLength": 981
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:36.212",
+            "pulseLength": 886
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:37.098",
+            "pulseLength": 803
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:47.824",
+            "pulseLength": 1069
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:48.893",
+            "pulseLength": 814
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:49.707",
+            "pulseLength": 791
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:50.498",
+            "pulseLength": 382
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:50.880",
+            "pulseLength": 828
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:51.708",
+            "pulseLength": 752
+          },
+          {
+            "sampleDateTime": "2023-01-01T10:03:52.460",
+            "pulseLength": 707
+          }
+        ]
+      }
+    ]
+  }
+]
