@@ -7,6 +7,9 @@ import streamlit as st
 
 st.set_page_config(page_title="Energy Tracker", layout="wide")
 
+# Get today's date early so it's available throughout
+today = date.today()
+
 # --- Color Configuration (Modify all colors here) ---
 # Chart colors
 COLORS = {
@@ -48,65 +51,30 @@ VARIABLE_COLORS = [
 ]
 
 def get_spread_colors(n):
-    """Pick n colors from custom palette, spreading from extremes inward."""
-    if n == 0:
+    """Pick n colors from custom palette."""
+    if n <= 0:
         return []
-    if n == 1:
-        return [VARIABLE_COLORS[0]]
-    if n == 2:
-        return [VARIABLE_COLORS[0], VARIABLE_COLORS[-1]]
-    # For n>=3: start with extremes, then fill from the middle outward
-    # Generate candidate positions: 0, last_index, mid, quarter, three-quarter, etc.
-    num_colors = len(VARIABLE_COLORS)
-    positions = []
-    for level in range(20):  # enough levels for reasonable n
-        if level == 0:
-            positions.extend([0, num_colors - 1])
-        elif level == 1:
-            positions.append((num_colors - 1) // 2)
-        else:
-            # subdivide existing intervals, pick midpoints
-            new_positions = []
-            sorted_pos = sorted(positions)
-            for i in range(len(sorted_pos) - 1):
-                midpoint = (sorted_pos[i] + sorted_pos[i + 1]) / 2
-                new_positions.append(int(round(midpoint)))
-            positions.extend(new_positions)
-    # Deduplicate while preserving order
-    seen = set()
-    unique = []
-    for p in positions:
-        if p < 0 or p >= num_colors:
-            continue
-        if p not in seen:
-            seen.add(p)
-            unique.append(p)
-        if len(unique) >= n:
-            break
-    return [VARIABLE_COLORS[p] for p in unique[:n]]
+    # Use first n colors from the palette
+    return VARIABLE_COLORS[:n]
 
 # --- Data Loading ---
 @st.cache_data
 def load_data():
-    df = pd.read_excel('data/otherData/energy_tracker.ods', engine='odf')
-    columns = ['date', 'stress_level(1-5)', 'sleep_hours', 'physical activity', 'focus', 'cognitive-usage', 'hyperactive-brain', 'total activity', 'social activity', 'POTS 0-5', 'mood', 'energy', 'exertion', 'fatigue', 'activity', 'sympthoms', 'poop1', 'supplements', 'notes1', 'notes 2', ]
-    df = df[columns]
+    # Read Excel with first column as index (dates)
+    df = pd.read_excel('data/otherData/energy_tracker.ods', engine='odf', index_col=0)
+    df.index.name = 'date'
+    df = df.reset_index()
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
+    # Clean up numeric columns that might have string values
+    df['total activity'] = df['total activity'].astype(str).str.replace('s', '', regex=False)
+    df['total activity'] = pd.to_numeric(df['total activity'], errors='coerce')
+    df['physical activity'] = df['physical activity'].fillna(0)
+    df['physical activity'] = pd.to_numeric(df['physical activity'], errors='coerce')
     df = df.dropna(subset=['date']).sort_values('date').reset_index(drop=True)
     return df
 
 df = load_data()
-# df['total activity'] = df['total activity'].astype(float)
 
-# replace 's' with ''
-df['total activity'] = df['total activity'].astype(str).str.replace('s', '', regex=False)
-df['total activity'] = pd.to_numeric(df['total activity'], errors='coerce')
-
-# replace nan with 0
-df['physical activity'] = df['physical activity'].fillna(0)
-df['physical activity'] = pd.to_numeric(df['physical activity'], errors='coerce')
-
-st.write(df.dtypes)
 # --- CSV Download ---
 st.download_button(
     label="⬇️ Download CSV",
@@ -117,7 +85,6 @@ st.download_button(
 
 # --- Table (last day + 5 days before) ---
 st.subheader("Last 6 days")
-today = pd.to_datetime("today").normalize()
 # Get today and 5 days before (6 days total)
 today_date = pd.to_datetime(today)
 start_date = today_date - timedelta(days=5)
