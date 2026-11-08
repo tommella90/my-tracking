@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.colors as mcolors
+from matplotlib.patches import Patch
 from datetime import date, timedelta
 import streamlit as st
 
@@ -20,6 +22,10 @@ COLORS = {
     'exertion_dot': "#D61919",
     'exertion_dot_edge': 'black',
     'band_alpha': 0.1,
+    'hrv_awake': '#1982D6',
+    'hrv_asleep': '#8F19D6',
+    'sleep_band': 'grey',
+    'sleep_band_alpha': 0.25,
 }
 
 # Horizontal band colors (one for each integer interval: 0-1, 1-2, 2-3, etc.)
@@ -59,8 +65,15 @@ def get_spread_colors(n):
     # Use first n colors from the palette
     return VARIABLE_COLORS[:n]
 
+
+def darker_color(hex_color, factor=0.65):
+    """Darker shade of a hex color (scale RGB channels), for mean lines."""
+    r, g, b = mcolors.to_rgb(hex_color)
+    return (r * factor, g * factor, b * factor)
+
 # --- Data Loading ---
 DAILY_CSV = 'data/unified/daily.csv'
+NIGHTLY_CSV = 'data/unified/nightly.csv'
 
 @st.cache_data
 def load_data():
@@ -112,6 +125,59 @@ def load_continuous_signal(filename, metric, value_col):
         df = df[df['metric'] == metric]
     df['timestamp'] = pd.to_datetime(df['timestamp'])
     return df[['timestamp', value_col]].rename(columns={value_col: 'value'})
+
+# --- Heart rate variability (HRV) from beat-to-beat PPI data ---
+# RMSSD window sizes offered in the UI (label -> pandas offset alias)
+HRV_BIN_OPTIONS = {"5 min": "5min", "15 min": "15min", "1 h": "1h"}
+HRV_MIN_BEATS = 5  # bins with fewer valid beats are too noisy to show
+HRV_MA_WINDOW = "24h"  # time-based window of the moving-average overlay
+
+
+@st.cache_data(show_spinner="Computing HRV (RMSSD) from beat-to-beat data...")
+def load_hrv_series():
+    """RMSSD per time bin for each window size, from valid PPI beats.
+
+    Returns {bin label: DataFrame(timestamp, rmssd_ms, beats)} or None.
+    """
+    path = os.path.join(CONTINUOUS_DIR, 'ppi.csv')
+    if not os.path.exists(path):
+        return None
+    ppi = pd.read_csv(path, usecols=['timestamp', 'pulse_length_ms', 'valid'])
+    valid = ppi['valid']
+    if valid.dtype != bool:
+        valid = valid.astype(str).str.lower().isin(['true', '1'])
+    ppi = ppi[valid]
+    ppi['timestamp'] = pd.to_datetime(ppi['timestamp'])
+    ppi = ppi.sort_values('timestamp').reset_index(drop=True)
+
+    ts = ppi['timestamp']
+    rr = ppi['pulse_length_ms'].to_numpy(dtype=float)
+    # RMSSD is built from successive differences; diff i belongs to beat i+1
+    d2 = pd.Series(np.diff(rr) ** 2, index=ts.iloc[1:].to_numpy())
+
+    series = {}
+    for label, bin_size in HRV_BIN_OPTIONS.items():
+        grouped = d2.groupby(d2.index.floor(bin_size))
+        counts = grouped.size()
+        rmssd = np.sqrt(grouped.mean())
+        bin_df = pd.DataFrame({
+            'timestamp': rmssd.index,
+            'rmssd_ms': rmssd.to_numpy(),
+            'beats': counts.to_numpy(),
+        })
+        series[label] = bin_df[bin_df['beats'] >= HRV_MIN_BEATS].reset_index(drop=True)
+    return series
+
+
+@st.cache_data
+def load_sleep_windows():
+    """Sleep windows (sleep_start -> sleep_end) from the nightly table."""
+    if not os.path.exists(NIGHTLY_CSV):
+        return None
+    n = pd.read_csv(NIGHTLY_CSV, usecols=['sleep_start', 'sleep_end'])
+    n['sleep_start'] = pd.to_datetime(n['sleep_start'], errors='coerce')
+    n['sleep_end'] = pd.to_datetime(n['sleep_end'], errors='coerce')
+    return n.dropna().sort_values('sleep_start').reset_index(drop=True)
 
 # --- CSV Download ---
 st.download_button(
@@ -365,6 +431,124 @@ elif selected_cont:
     st.pyplot(fig3)
 else:
     st.info("Select at least one signal to display.")
+
+# --- Heart rate variability (HRV): sleep vs awake, nights shaded grey ---
+st.subheader("Heart rate variability (HRV)")
+
+hrv_series = load_hrv_series()
+sleep_windows = load_sleep_windows()
+
+if hrv_series is None:
+    st.info("No beat-to-beat (PPI) data found. Run `python scripts/unify_polar_data.py`.")
+else:
+    # Same date window as the charts above
+    if len(date_range) == 2:
+        hrv_start, hrv_end = date_range
+    else:
+        hrv_start = filtered_df['date'].min().date()
+        hrv_end = filtered_df['date'].max().date()
+
+    hrv_bin = st.segmented_control(
+        "RMSSD window",
+        options=list(HRV_BIN_OPTIONS.keys()),
+        default="15 min",
+        label_visibility="collapsed",
+    ) or "15 min"
+
+    hrv_df = hrv_series[hrv_bin]
+    hrv_mask = (hrv_df['timestamp'].dt.date >= hrv_start) & (hrv_df['timestamp'].dt.date <= hrv_end)
+    hrv_df = hrv_df[hrv_mask].reset_index(drop=True)
+
+    fig_h, ax_h = plt.subplots(figsize=(14, 6))
+
+    # Remove all splines EXCEPT bottom
+    for spine_name, spine in ax_h.spines.items():
+        if spine_name == 'bottom':
+            spine.set_visible(True)
+            spine.set_linewidth(0.8)
+            spine.set_color(COLORS['spine'])
+        else:
+            spine.set_visible(False)
+
+    # Grey background for every night (sleep window) overlapping the range
+    asleep = np.zeros(len(hrv_df), dtype=bool)
+    if sleep_windows is not None and not sleep_windows.empty:
+        win_start = pd.Timestamp(hrv_start)
+        win_end = pd.Timestamp(hrv_end) + pd.Timedelta(days=1)
+        for _, w in sleep_windows.iterrows():
+            if w['sleep_end'] >= win_start and w['sleep_start'] <= win_end:
+                ax_h.axvspan(
+                    w['sleep_start'], w['sleep_end'],
+                    color=COLORS['sleep_band'],
+                    alpha=COLORS['sleep_band_alpha'],
+                    zorder=0,
+                )
+        # Mark each HRV point as asleep when it falls inside a sleep window
+        starts = sleep_windows['sleep_start'].to_numpy()
+        ends = sleep_windows['sleep_end'].to_numpy()
+        t = hrv_df['timestamp'].to_numpy()
+        idx = np.searchsorted(starts, t, side='right') - 1
+        inside = idx >= 0
+        asleep[inside] = t[inside] <= ends[idx[inside]]
+
+    # Plot contiguous asleep/awake runs in distinct colors
+    ma_handles = []
+    if not hrv_df.empty:
+        x = hrv_df['timestamp'].to_numpy()
+        y = hrv_df['rmssd_ms'].to_numpy()
+        start = 0
+        for i in range(1, len(x) + 1):
+            if i == len(x) or asleep[i] != asleep[start]:
+                # overlap one point so consecutive runs stay connected
+                end = i + 1 if i < len(x) else i
+                color = COLORS['hrv_asleep'] if asleep[start] else COLORS['hrv_awake']
+                ax_h.plot(x[start:end], y[start:end], color=color, linewidth=1.5)
+                start = i
+
+        # Moving average per state: smoothed line in a darker shade of each color
+        ma_index = pd.DatetimeIndex(hrv_df['timestamp'])
+        for state, base_color, label in (
+            (False, COLORS['hrv_awake'], f'Moving avg awake ({HRV_MA_WINDOW})'),
+            (True, COLORS['hrv_asleep'], f'Moving avg asleep ({HRV_MA_WINDOW})'),
+        ):
+            state_mask = asleep == state
+            if state_mask.sum() >= 3:
+                s = pd.Series(
+                    hrv_df.loc[state_mask, 'rmssd_ms'].to_numpy(),
+                    index=ma_index[state_mask],
+                ).sort_index()
+                ma = s.rolling(HRV_MA_WINDOW, min_periods=3).mean()
+                dark = darker_color(base_color)
+                ax_h.plot(ma.index, ma.to_numpy(), color=dark, linewidth=2.5, zorder=3)
+                ma_handles.append(
+                    plt.Line2D([0], [0], color=dark, linewidth=2.5, label=label)
+                )
+
+    ax_h.set_title("Heart rate variability (RMSSD) — grey bands mark sleep",
+                   fontsize=14, fontweight='bold')
+    ax_h.set_ylabel("RMSSD (ms)")
+    ax_h.grid(axis='y', alpha=COLORS['grid_alpha'])
+    ax_h.grid(axis='x', visible=False)
+    ax_h.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
+    ax_h.xaxis.set_major_locator(mdates.AutoDateLocator())
+    plt.setp(ax_h.get_xticklabels(), rotation=0, ha='center')
+
+    legend_handles = [
+        plt.Line2D([0], [0], color=COLORS['hrv_awake'], linewidth=2, label='HRV awake'),
+        plt.Line2D([0], [0], color=COLORS['hrv_asleep'], linewidth=2, label='HRV asleep'),
+        Patch(facecolor=COLORS['sleep_band'], alpha=COLORS['sleep_band_alpha'],
+              label='Night (sleep)'),
+    ] + ma_handles
+    ax_h.legend(handles=legend_handles, loc='center left',
+                bbox_to_anchor=(1.02, 0.5), fontsize=9, frameon=False)
+
+    fig_h.tight_layout()
+    st.pyplot(fig_h)
+    st.caption(
+        "RMSSD computed from valid beat-to-beat (PPI) intervals within each window. "
+        "Grey bands show the recorded sleep windows; the line color distinguishes asleep vs awake. "
+        f"Thick darker lines show the {HRV_MA_WINDOW} moving average for awake and asleep periods."
+    )
 
 # --- Correlation Map (same date range as above) ---
 st.subheader("Correlations")
